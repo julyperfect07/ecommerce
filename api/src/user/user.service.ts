@@ -32,7 +32,8 @@ export class UserService {
       );
     }
 
-    return this.prisma.user.findMany({ select: userSelect });
+    const users = await this.prisma.user.findMany({ select: userSelect });
+    return { message: 'Users fetched successfully', users };
   }
 
   async getUserById(loggedInId: string, id: string) {
@@ -44,7 +45,11 @@ export class UserService {
       );
     }
 
-    return this.prisma.user.findUnique({ where: { id }, select: userSelect });
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: userSelect,
+    });
+    return { message: 'User fetched successfully', user };
   }
 
   async updateUser(
@@ -60,11 +65,12 @@ export class UserService {
       );
     }
 
-    return this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
       select: userSelect,
     });
+    return { message: 'User updated successfully', user };
   }
 
   async deleteUser(loggedInId: string, id: string) {
@@ -76,6 +82,7 @@ export class UserService {
       );
     }
 
-    return this.prisma.user.delete({ where: { id } });
+    await this.prisma.user.delete({ where: { id } });
+    return { message: 'User deleted successfully' };
   }
 }
