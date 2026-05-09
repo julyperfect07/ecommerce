@@ -7,16 +7,19 @@ import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './stratigies/local.strategy';
 import { JwtStrategy } from './stratigies/jwt.strategy';
 
+const JWT_SECRET = process.env.JWT_SECRET;
+
 @Module({
   imports: [
     PrismaModule,
     PassportModule,
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'default_secret',
+      secret: JWT_SECRET,
       signOptions: { expiresIn: '1h' },
     }),
   ],
   providers: [AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
+  exports: [JwtModule],
 })
 export class AuthModule {}

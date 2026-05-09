@@ -1,28 +1,33 @@
-import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
-import { AuthDto } from './dto/auth.dto';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { LocalGuard } from './guards/local.guard';
+import { AuthDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
   @Post('login')
   @UseGuards(LocalGuard)
-  async login(@Body() authDto: AuthDto, @Res() res: Response) {
-    const result = await this.authService.validateUser(authDto);
-    res.cookie('access_token', result.access_token, {
+  async login(@Req() req: Request, @Res() res: Response) {
+    const user = req.user;
+
+    const { access_token } = await this.authService.login(user);
+
+    res.cookie('access_token', access_token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 1000, // 1 hour
+      maxAge: 60 * 60 * 1000,
     });
+
     return res.json({ message: 'Login successful' });
   }
 
   @Post('register')
   register(@Body() authDto: AuthDto) {
-    return this.authService.register(authDto);
+    return this.authService.register(authDto.email, authDto.password);
   }
 
   @Post('logout')

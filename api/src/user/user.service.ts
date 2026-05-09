@@ -35,7 +35,7 @@ export class UserService {
     const users = await this.prisma.user.findMany({ select: userSelect });
     return { message: 'Users fetched successfully', users };
   }
-
+  //localhost:3000/user/0e9a3ff4-7af6-486b-a378-daff0a68b910
   async getUserById(loggedInId: string, id: string) {
     const role = await this.checkRole(loggedInId);
 

@@ -7,11 +7,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: (req: Request) => req?.cookies?.access_token,
       ignoreExpiration: false,
-      secretOrKey: process.env.TOKEN_SECRET || 'default',
+      secretOrKey: process.env.JWT_SECRET || 'default',
     });
   }
 
   async validate(payload: any) {
-    return { id: payload.sub, email: payload.email };
+    return {
+      id: payload.sub,
+      email: payload.email,
+      role: payload.role,
+    };
   }
 }
