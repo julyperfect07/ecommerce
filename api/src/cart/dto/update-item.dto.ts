@@ -1,7 +1,7 @@
-import { IsNumber, Min } from 'class-validator';
+import { IsNotIn, IsNumber, Min } from 'class-validator';
 
 export class UpdateItemDto {
   @IsNumber()
-  @Min(1)
+  @IsNotIn([0])
   quantity!: number;
 }

@@ -38,7 +38,7 @@ export class CartController {
     @Body() updateItemDto: UpdateItemDto,
     @CurrentUser('id') userId: string,
   ) {
-    // return this.cartService.updateQuantity(itemId, updateItemDto, userId);
+    return this.cartService.updateQuantity(itemId, updateItemDto, userId);
   }
 
   @Delete('items/:itemId')
@@ -46,6 +46,6 @@ export class CartController {
     @Param('itemId') itemId: string,
     @CurrentUser('id') userId: string,
   ) {
-    // return this.cartService.deleteItemFromCart(itemId, userId);
+    return this.cartService.deleteItemFromCart(itemId, userId);
   }
 }
