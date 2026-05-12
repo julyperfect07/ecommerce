@@ -1,12 +1,16 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class OrdersService {
   constructor(private prisma: PrismaService) {}
+
   async checkOut(userId: string) {
-    const cart = await this.prisma.cart.findFirst({
+    const cart = await this.prisma.cart.findUnique({
       where: { userId },
       include: {
         items: {
@@ -37,14 +41,47 @@ export class OrdersService {
           })),
         },
       },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
     });
-    await this.prisma.cart.delete({
-      where: { id: cart.id },
-    });
+
+    // 👈 clear items but keep the cart
+    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+
     return { message: 'Order placed successfully', order };
   }
 
-  async getOrders(userId: string) {}
+  async getOrders(userId: string) {
+    const orders = await this.prisma.order.findMany({
+      where: { userId },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
+    return { message: 'Orders fetched successfully', orders };
+  }
 
-  async getOrder(orderId: string, userId: string) {}
+  async getOrder(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: { product: true },
+        },
+      },
+    });
+
+    if (!order || order.userId !== userId) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return { message: 'Order fetched successfully', order };
+  }
 }

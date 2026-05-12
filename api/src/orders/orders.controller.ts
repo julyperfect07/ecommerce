@@ -9,12 +9,16 @@ export class OrdersController {
   constructor(private ordersService: OrdersService) {}
   @Post()
   checkOut(@CurrentUser('id') userId: string) {
-    return '';
+    return this.ordersService.checkOut(userId);
   }
 
   @Get()
-  getOrders(@CurrentUser('id') userId: string) {}
+  getOrders(@CurrentUser('id') userId: string) {
+    return this.ordersService.getOrders(userId);
+  }
 
   @Get(':id')
-  getOrder(@Param('id') orderId: string, @CurrentUser('id') userId: string) {}
+  getOrder(@Param('id') orderId: string, @CurrentUser('id') userId: string) {
+    return this.ordersService.getOrder(orderId, userId);
+  }
 }
