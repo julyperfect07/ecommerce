@@ -24,6 +24,7 @@ export class CartService {
 
     return cart;
   }
+
   async getCart(userId: string) {
     const cart = await this.getOrCreateCart(userId);
     const cartWithItems = await this.prisma.cart.findUnique({
@@ -44,21 +45,40 @@ export class CartService {
     const cart = await this.getOrCreateCart(userId);
     const { productId, quantity } = addItemDto;
 
+    // 🔴 check product exists
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    // 🔴 check stock
+    if (product.stock < quantity) {
+      throw new BadRequestException(
+        `Not enough stock for "${product.name}". Available: ${product.stock}`,
+      );
+    }
+
     // check if item already exists in cart
     const existingItem = await this.prisma.cartItem.findFirst({
       where: { cartId: cart.id, productId },
     });
 
     if (existingItem) {
-      // 👇 if exists, just increase quantity
+      // 🔴 check stock including already existing quantity in cart
+      const newQuantity = existingItem.quantity + quantity;
+      if (product.stock < newQuantity) {
+        throw new BadRequestException(
+          `Not enough stock for "${product.name}". Available: ${product.stock}`,
+        );
+      }
+
       const item = await this.prisma.cartItem.update({
         where: { id: existingItem.id },
-        data: { quantity: existingItem.quantity + quantity },
+        data: { quantity: newQuantity },
       });
       return { message: 'Item quantity updated', item };
     }
 
-    // 👇 if not exists, create new cart item
     const item = await this.prisma.cartItem.create({
       data: { cartId: cart.id, productId, quantity },
     });
@@ -77,10 +97,20 @@ export class CartService {
 
     if (!item) throw new NotFoundException('Item not found in your cart');
 
-    const newQuantity = item.quantity + updateItemDto.quantity; // 👈 +1 or -1
+    const newQuantity = item.quantity + updateItemDto.quantity;
 
     if (newQuantity < 1)
       throw new BadRequestException('Quantity cannot be less than 1');
+
+    // 🔴 check stock on update too
+    const product = await this.prisma.product.findUnique({
+      where: { id: item.productId },
+    });
+    if (product && product.stock < newQuantity) {
+      throw new BadRequestException(
+        `Not enough stock for "${product.name}". Available: ${product.stock}`,
+      );
+    }
 
     const updatedItem = await this.prisma.cartItem.update({
       where: { id: itemId },
@@ -97,10 +127,10 @@ export class CartService {
     });
     if (!item) throw new NotFoundException('Item not found in your cart');
 
-    const deletedItem = await this.prisma.cartItem.delete({
+    await this.prisma.cartItem.delete({
       where: { id: itemId, cartId: cart.id },
     });
 
-    return { message: 'Item deleted successfully', deletedItem };
+    return { message: 'Item deleted successfully' };
   }
 }

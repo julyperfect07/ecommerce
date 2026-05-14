@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -9,8 +11,27 @@ import { CartModule } from './cart/cart.module';
 import { OrdersModule } from './orders/orders.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UserModule, ProductsModule, CartModule, OrdersModule],
+  imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 👈 time window in milliseconds (60 seconds)
+        limit: 10, // 👈 max requests per window globally
+      },
+    ]),
+    PrismaModule,
+    AuthModule,
+    UserModule,
+    ProductsModule,
+    CartModule,
+    OrdersModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard, // 👈 applies rate limiting globally
+    },
+  ],
 })
 export class AppModule {}

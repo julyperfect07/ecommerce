@@ -25,33 +25,59 @@ export class OrdersService {
       throw new BadRequestException('Your cart is empty');
     }
 
+    // 🔴 check stock for all items before doing anything
+    for (const item of cart.items) {
+      if (!item.product) {
+        throw new NotFoundException(`Product not found`);
+      }
+      if (item.product.stock < item.quantity) {
+        throw new BadRequestException(
+          `Not enough stock for "${item.product.name}". Available: ${item.product.stock}`,
+        );
+      }
+    }
+
     const total = cart.items.reduce((sum, item) => {
       return sum + item.product.price * item.quantity;
     }, 0);
 
-    const order = await this.prisma.order.create({
-      data: {
-        userId,
-        total,
-        items: {
-          create: cart.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.product.price,
-          })),
-        },
-      },
-      include: {
-        items: {
-          include: {
-            product: true,
+    // 🔴 wrap everything in a transaction — all or nothing
+    const order = await this.prisma.$transaction(async (tx) => {
+      // 1 - create the order
+      const order = await tx.order.create({
+        data: {
+          userId,
+          total,
+          items: {
+            create: cart.items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.product.price,
+            })),
           },
         },
-      },
-    });
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
 
-    // 👈 clear items but keep the cart
-    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+      // 2 - reduce stock for each product
+      for (const item of cart.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } },
+        });
+      }
+
+      // 3 - clear the cart
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+      return order;
+    });
 
     return { message: 'Order placed successfully', order };
   }
