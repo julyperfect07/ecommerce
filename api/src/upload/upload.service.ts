@@ -12,7 +12,6 @@ export class UploadService {
     });
   }
 
-  // upload.service.ts
   async uploadImage(
     file: Express.Multer.File,
     folder: string = 'ecommerce/products',
