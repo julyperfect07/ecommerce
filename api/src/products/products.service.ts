@@ -4,28 +4,66 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UploadService } from '../upload/upload.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 
+const productSelect = {
+  id: true,
+  name: true,
+  description: true,
+  price: true,
+  stock: true,
+  imageUrl: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private uploadService: UploadService, // 👈 inject upload service
+  ) {}
 
   async getProducts() {
-    const products = await this.prisma.product.findMany();
+    const products = await this.prisma.product.findMany({
+      select: productSelect,
+    });
     return { message: 'Products fetched successfully', products };
   }
 
   async getProductById(id: string) {
-    const product = await this.prisma.product.findUnique({ where: { id } });
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      select: productSelect,
+    });
     if (!product) throw new NotFoundException('Product not found');
     return { message: 'Product fetched successfully', product };
   }
 
-  async createProduct(createProductDto: CreateProductDto, userRole: string) {
-    this.checkIfAdmin(userRole); // 👈 fixed missing ()
+  async createProduct(
+    createProductDto: CreateProductDto,
+    file: Express.Multer.File,
+    userRole: string,
+  ) {
+    this.checkIfAdmin(userRole);
+
+    // 👇 upload image if provided
+    let imageUrl: string | undefined;
+    if (file) {
+      imageUrl = await this.uploadService.uploadImage(
+        file,
+        'ecommerce/products',
+      );
+    }
+
     const product = await this.prisma.product.create({
-      data: createProductDto,
+      data: {
+        ...createProductDto,
+        imageUrl, // 👈 undefined if no file, Prisma will just leave it null
+      },
+      select: productSelect,
     });
     return { message: 'Product created successfully', product };
   }
@@ -33,22 +71,34 @@ export class ProductsService {
   async updateProduct(
     productId: string,
     updateProductDto: UpdateProductDto,
+    file: Express.Multer.File,
     userRole: string,
   ) {
     this.checkIfAdmin(userRole);
+
+    // 👇 upload new image if provided
+    let imageUrl: string | undefined;
+    if (file) {
+      imageUrl = await this.uploadService.uploadImage(
+        file,
+        'ecommerce/products',
+      );
+    }
+
     const product = await this.prisma.product.update({
-      // 👈 added await
-      where: { id: productId }, // 👈 fixed id
-      data: updateProductDto,
+      where: { id: productId },
+      data: {
+        ...updateProductDto,
+        ...(imageUrl && { imageUrl }), // 👈 only update imageUrl if new file was uploaded
+      },
+      select: productSelect,
     });
-    return { message: 'Product updated successfully', product }; // 👈 fixed message
+    return { message: 'Product updated successfully', product };
   }
 
   async deleteProduct(productId: string, userRole: string) {
     this.checkIfAdmin(userRole);
-    await this.prisma.product.delete({
-      where: { id: productId }, // 👈 fixed id
-    });
+    await this.prisma.product.delete({ where: { id: productId } });
     return { message: 'Product deleted successfully' };
   }
 
