@@ -45,7 +45,7 @@ export class ProductsController {
 
   @Post()
   @UseGuards(JwtGuard)
-  @UseInterceptors(FileInterceptor('file', fileOptions)) // 👈 optional file
+  @UseInterceptors(FileInterceptor('file', fileOptions))
   createProduct(
     @Body() createProductDto: CreateProductDto,
     @UploadedFile() file: Express.Multer.File,

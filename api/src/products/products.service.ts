@@ -61,7 +61,7 @@ export class ProductsService {
     const product = await this.prisma.product.create({
       data: {
         ...createProductDto,
-        imageUrl, // 👈 undefined if no file, Prisma will just leave it null
+        imageUrl, //  undefined if no file, Prisma will just leave it null
       },
       select: productSelect,
     });
