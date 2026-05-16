@@ -2,8 +2,10 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 @Injectable()
 export class OrdersService {
@@ -109,5 +111,30 @@ export class OrdersService {
     }
 
     return { message: 'Order fetched successfully', order };
+  }
+
+  async updateOrderStatus(
+    orderId: string,
+    updateOrderStatusDto: UpdateOrderStatusDto,
+    userRole: string,
+  ) {
+    if (userRole !== 'ADMIN') {
+      throw new UnauthorizedException(
+        'You are not authorized to do this action',
+      );
+    }
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: updateOrderStatusDto.status },
+    });
+
+    return { message: 'Order status updated successfully', updatedOrder };
   }
 }
