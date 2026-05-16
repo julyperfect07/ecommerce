@@ -10,6 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtGuard } from '../auth/guards/jwt.guard';
@@ -17,6 +18,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductsService } from './products.service';
 import { CurrentUser } from '../common/decorators/currentuser.decorator';
+import { ProductQueryDto } from './dto/product-query.dto';
 
 const fileOptions = {
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
@@ -34,8 +36,8 @@ export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
   @Get()
-  getProducts() {
-    return this.productsService.getProducts();
+  getProducts(@Query() queryDto: ProductQueryDto) {
+    return this.productsService.getProducts(queryDto);
   }
 
   @Get(':id')

@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { ProductQueryDto } from './dto/product-query.dto';
 
 const productSelect = {
   id: true,
@@ -26,11 +27,34 @@ export class ProductsService {
     private uploadService: UploadService, // 👈 inject upload service
   ) {}
 
-  async getProducts() {
-    const products = await this.prisma.product.findMany({
-      select: productSelect,
-    });
-    return { message: 'Products fetched successfully', products };
+  async getProducts(queryDto: ProductQueryDto) {
+    const { page = 1, limit = 10, name, minPrice, maxPrice } = queryDto;
+
+    const where = {
+      name: name ? { contains: name, mode: 'insensitive' as const } : undefined,
+      price: {
+        gte: minPrice ?? undefined,
+        lte: maxPrice ?? undefined,
+      },
+    };
+
+    const [products, total] = await this.prisma.$transaction([
+      this.prisma.product.findMany({
+        where,
+        select: productSelect,
+        skip: page && limit ? (page - 1) * limit : undefined,
+        take: limit ?? undefined,
+      }),
+      this.prisma.product.count({ where }),
+    ]);
+
+    return {
+      message: 'Products fetched successfully',
+      total,
+      page: page ?? 1,
+      limit: limit ?? total,
+      products,
+    };
   }
 
   async getProductById(id: string) {
