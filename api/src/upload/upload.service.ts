@@ -25,4 +25,17 @@ export class UploadService {
         .end(file.buffer);
     });
   }
+
+  async deleteImage(imageUrl: string): Promise<void> {
+    // extract public_id from the Cloudinary URL
+    // URL looks like: https://res.cloudinary.com/dsxo1ymso/image/upload/v1234567890/ecommerce/products/abc123.png
+    // public_id is: ecommerce/products/abc123
+    const urlParts = imageUrl.split('/');
+    const fileWithExtension = urlParts[urlParts.length - 1]; // abc123.png
+    const fileName = fileWithExtension.split('.')[0]; // abc123
+    const folder = urlParts.slice(-3, -1).join('/'); // ecommerce/products
+    const publicId = `${folder}/${fileName}`; // ecommerce/products/abc123
+
+    await cloudinary.uploader.destroy(publicId);
+  }
 }

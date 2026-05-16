@@ -24,7 +24,7 @@ const productSelect = {
 export class ProductsService {
   constructor(
     private prisma: PrismaService,
-    private uploadService: UploadService, // 👈 inject upload service
+    private uploadService: UploadService,
   ) {}
 
   async getProducts(queryDto: ProductQueryDto) {
@@ -100,9 +100,19 @@ export class ProductsService {
   ) {
     this.checkIfAdmin(userRole);
 
+    // 👇 fetch existing product first
+    const existingProduct = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+    if (!existingProduct) throw new NotFoundException('Product not found');
+
     // 👇 upload new image if provided
     let imageUrl: string | undefined;
     if (file) {
+      // 👇 delete old image before uploading new one
+      if (existingProduct.imageUrl) {
+        await this.uploadService.deleteImage(existingProduct.imageUrl);
+      }
       imageUrl = await this.uploadService.uploadImage(
         file,
         'ecommerce/products',
@@ -113,15 +123,26 @@ export class ProductsService {
       where: { id: productId },
       data: {
         ...updateProductDto,
-        ...(imageUrl && { imageUrl }), // 👈 only update imageUrl if new file was uploaded
+        ...(imageUrl && { imageUrl }),
       },
       select: productSelect,
     });
+
     return { message: 'Product updated successfully', product };
   }
 
   async deleteProduct(productId: string, userRole: string) {
     this.checkIfAdmin(userRole);
+
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    if (product.imageUrl) {
+      await this.uploadService.deleteImage(product.imageUrl);
+    }
+
     await this.prisma.product.delete({ where: { id: productId } });
     return { message: 'Product deleted successfully' };
   }
