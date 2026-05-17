@@ -26,6 +26,7 @@ model User {
   password  String
   name      String?
   role     String   @default("USER")
+  refreshToken String?
   cart     Cart?
   orders  Order[]
   createdAt DateTime @default(now())
