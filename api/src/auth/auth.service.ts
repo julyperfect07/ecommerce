@@ -61,16 +61,20 @@ export class AuthService {
 
   async refreshToken(refreshToken: string) {
     try {
+      // 1 - verify token is valid
       const payload = this.jwtService.verify(refreshToken);
 
+      // 2 - find user
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
       });
       if (!user || !user.refreshToken) throw new UnauthorizedException();
 
+      // 3 - compare with hashed token in DB
       const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
       if (!isMatch) throw new UnauthorizedException('Invalid refresh token');
 
+      // 4 - generate new access token
       const newPayload = { sub: user.id, email: user.email, role: user.role };
       return this.jwtService.sign(newPayload, { expiresIn: '15m' });
     } catch {
