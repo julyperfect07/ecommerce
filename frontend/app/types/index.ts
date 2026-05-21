@@ -45,3 +45,11 @@ export interface Order {
   items: OrderItem[];
   createdAt: string;
 }
+
+export interface ProductQueryParams {
+  page?: number;
+  limit?: number;
+  name?: string;
+  minPrice?: number;
+  maxPrice?: number;
+}
