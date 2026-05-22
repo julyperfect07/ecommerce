@@ -1,3 +1,10 @@
+export type OrderStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED";
+
 export interface User {
   id: string;
   email: string;
@@ -41,7 +48,7 @@ export interface Order {
   id: string;
   userId: string;
   total: number;
-  status: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED" | "CANCELLED";
+  status: OrderStatus;
   items: OrderItem[];
   createdAt: string;
 }
@@ -61,4 +68,8 @@ export interface AddItemDto {
 
 export interface UpdateItemDto {
   quantity: number;
+}
+
+export interface UpdateOrderDto {
+  status: OrderStatus;
 }
