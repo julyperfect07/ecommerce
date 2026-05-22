@@ -53,3 +53,12 @@ export interface ProductQueryParams {
   minPrice?: number;
   maxPrice?: number;
 }
+
+export interface AddItemDto {
+  productId: string;
+  quantity: number;
+}
+
+export interface UpdateItemDto {
+  quantity: number;
+}
