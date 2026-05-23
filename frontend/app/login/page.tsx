@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import { login } from "../services/auth";
+import { login } from "@/app/services/auth";
+import { getMe } from "@/app/services/auth";
 import { motion } from "framer-motion";
 import {
   Card,
@@ -16,20 +17,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { toast } from "sonner";
+import useAuthStore from "@/app/store/auth.store";
 
 const LoginPage = () => {
   const router = useRouter();
+  const { setUser } = useAuthStore();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       await login(email, password);
+      const me = await getMe();
+      setUser(me);
       toast.success("Welcome back! 🎉");
       router.push("/");
     } catch (error) {
@@ -40,7 +43,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center lg:items-stretch">
+    <div className="min-h-screen flex">
       {/* Left Side - Animated */}
       <div className="hidden lg:flex flex-col w-1/2 relative bg-black overflow-hidden items-center justify-center p-12">
         {/* Animated blobs */}
@@ -67,7 +70,7 @@ const LoginPage = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl font-bold text-white mb-4">
+            <h1 className="text-5xl font-bold text-white mb-4 tracking-tight">
               Shop<span className="text-purple-400">Wave</span>
             </h1>
             <p className="text-lg text-gray-400 max-w-sm mx-auto">
@@ -99,26 +102,26 @@ const LoginPage = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background px-8">
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background px-4 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-md px-2 lg:px-0"
+          className="w-full max-w-md"
         >
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-3xl font-bold tracking-tight">
               Shop<span className="text-purple-500">Wave</span>
             </h1>
           </div>
 
           <Card className="border border-border shadow-lg">
             <CardHeader className="space-y-1 pb-4">
-              <CardTitle className="text-2xl font-bold text-center">
+              <CardTitle className="text-3xl font-bold text-center tracking-tight">
                 Welcome back
               </CardTitle>
-              <CardDescription className="text-center text-base">
+              <CardDescription className="text-center text-base tracking-wide">
                 Enter your credentials to continue
               </CardDescription>
             </CardHeader>

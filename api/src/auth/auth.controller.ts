@@ -6,6 +6,7 @@ import {
   Res,
   UseGuards,
   UnauthorizedException,
+  Get,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
@@ -80,5 +81,11 @@ export class AuthController {
       maxAge: 15 * 60 * 1000,
     });
     return res.json({ message: 'Token refreshed successfully' });
+  }
+
+  @Get('me')
+  @UseGuards(JwtGuard)
+  async getMe(@CurrentUser() user) {
+    return user;
   }
 }

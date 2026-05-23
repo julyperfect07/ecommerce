@@ -26,6 +26,7 @@ import useAuthStore from "@/app/store/auth.store";
 import { logout } from "@/app/services/auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import CartSheet from "./cart-sheet";
 
 const Navbar = () => {
   const router = useRouter();
@@ -145,15 +146,7 @@ const Navbar = () => {
           {isAuthenticated ? (
             <>
               {/* Cart */}
-              <Link href="/cart">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative w-10 h-10"
-                >
-                  <ShoppingCart className="w-6 h-6" />
-                </Button>
-              </Link>
+              <CartSheet />
 
               {/* User Dropdown */}
               <DropdownMenu>
