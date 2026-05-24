@@ -12,6 +12,8 @@ import {
   LogOut,
   Package,
   LayoutDashboard,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -22,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTheme } from "next-themes";
 import useAuthStore from "@/app/store/auth.store";
 import { logout } from "@/app/services/auth";
 import { useRouter } from "next/navigation";
@@ -31,11 +34,13 @@ import CartSheet from "./cart-sheet";
 const Navbar = () => {
   const router = useRouter();
   const { user, isAuthenticated, clearUser } = useAuthStore();
+  const { theme, setTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [focused, setFocused] = useState(false);
   const [search, setSearch] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   const placeholders = [
     "Search for Nike shoes...",
@@ -44,6 +49,10 @@ const Navbar = () => {
     "Search for headphones...",
     "Search for watches...",
   ];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -84,7 +93,7 @@ const Navbar = () => {
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-20 gap-6">
         {/* Left - Logo */}
-        <Link href="/" className="shrink-0">
+        <Link href="/" className="flex-shrink-0">
           <motion.h1
             whileHover={{ scale: 1.05 }}
             className="text-2xl font-bold tracking-tight"
@@ -116,7 +125,6 @@ const Navbar = () => {
                   : "border-border"
               }`}
             />
-            {/* Animated placeholder */}
             {!search && !focused && (
               <div className="absolute inset-0 pl-11 flex items-center pointer-events-none">
                 <AnimatePresence mode="wait">
@@ -137,15 +145,49 @@ const Navbar = () => {
         </form>
 
         {/* Right - Actions */}
-        <div className="flex items-center gap-3">
-          {/* Mobile search icon */}
+        <div className="flex items-center gap-2">
+          {/* Mobile search */}
           <Button variant="ghost" size="icon" className="md:hidden w-10 h-10">
             <Search className="w-5 h-5" />
           </Button>
 
+          {/* Theme Toggle */}
+          {mounted && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-10 h-10"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              <AnimatePresence mode="wait">
+                {theme === "dark" ? (
+                  <motion.div
+                    key="sun"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Sun className="w-5 h-5" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="moon"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Moon className="w-5 h-5" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Button>
+          )}
+
           {isAuthenticated ? (
             <>
-              {/* Cart */}
+              {/* Cart Sheet */}
               <CartSheet />
 
               {/* User Dropdown */}
@@ -164,7 +206,9 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-3 py-2">
-                    <p className="text-base font-medium">{user?.email}</p>
+                    <p className="text-base font-medium truncate">
+                      {user?.email}
+                    </p>
                     <p className="text-sm text-muted-foreground capitalize">
                       {user?.role?.toLowerCase()}
                     </p>
@@ -260,20 +304,11 @@ const Navbar = () => {
                   />
                 </div>
               </form>
-              <Link
-                href="/products"
-                className="block py-2 text-base font-medium"
-              >
+              <Link href="/" className="block py-2 text-base font-medium">
                 Products
               </Link>
               {isAuthenticated && (
                 <>
-                  <Link
-                    href="/cart"
-                    className="block py-2 text-base font-medium"
-                  >
-                    Cart
-                  </Link>
                   <Link
                     href="/orders"
                     className="block py-2 text-base font-medium"

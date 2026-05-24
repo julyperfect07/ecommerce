@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { getMe } from "@/app/services/auth";
 import useAuthStore from "@/app/store/auth.store";
 
-const publicRoutes = ["/login", "/register"];
+const publicRoutes = ["/", "/login", "/register"];
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
