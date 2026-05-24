@@ -5,6 +5,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Navbar from "@/components/layout/navbar";
 import { Providers } from "@/components/layout/providers";
+import { AuthProvider } from "@/components/layout/auth-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,22 +36,24 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ThemeProvider>
           <Providers>
-            <Navbar />
-            {children}
-            <Toaster
-              position="top-center"
-              toastOptions={{
-                style: {
-                  fontSize: "16px",
-                  padding: "16px 24px",
-                  borderRadius: "12px",
-                },
-                classNames: {
-                  error: "bg-red-500 text-white border-none",
-                  success: "bg-purple-600 text-white border-none",
-                },
-              }}
-            />
+            <AuthProvider>
+              <Navbar />
+              {children}
+              <Toaster
+                position="top-center"
+                toastOptions={{
+                  style: {
+                    fontSize: "16px",
+                    padding: "16px 24px",
+                    borderRadius: "12px",
+                  },
+                  classNames: {
+                    error: "bg-red-500 text-white border-none",
+                    success: "bg-purple-600 text-white border-none",
+                  },
+                }}
+              />
+            </AuthProvider>
           </Providers>
         </ThemeProvider>
       </body>
