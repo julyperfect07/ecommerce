@@ -121,7 +121,7 @@ const HomePage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="rounded-2xl border bg-card overflow-hidden">
-              <Skeleton className="h-72 md:h-96 w-full" />
+              <Skeleton className="h-48 sm:h-56 md:h-72 w-full" />
               <div className="p-4 md:p-6 space-y-3">
                 <Skeleton className="h-6 w-3/4" />
                 <Skeleton className="h-4 w-full" />
@@ -160,13 +160,13 @@ const HomePage = () => {
               <Link href={`/products/${product.id}`}>
                 <div className="group rounded-2xl border bg-card overflow-hidden hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:-translate-y-2">
                   {/* Product Image */}
-                  <div className="relative h-56 md:h-72 bg-muted overflow-hidden">
+                  <div className="relative bg-muted overflow-hidden w-full aspect-[3/2] sm:aspect-[4/3] md:aspect-[16/9]">
                     {product.imageUrl ? (
                       <Image
                         src={product.imageUrl}
                         alt={product.name}
                         fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="object-cover object-center group-hover:scale-110 transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-muted">
@@ -197,7 +197,7 @@ const HomePage = () => {
                   </div>
 
                   {/* Product Info */}
-                  <div className="p-4 md:p-6 space-y-2 md:space-y-3">
+                  <div className="p-3 md:p-6 space-y-2 md:space-y-3">
                     <h3 className="font-bold text-lg md:text-xl leading-tight line-clamp-2 group-hover:text-purple-500 transition-colors duration-200">
                       {product.name}
                     </h3>

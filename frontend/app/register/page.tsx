@@ -73,7 +73,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center lg:items-stretch">
+    <div className="min-h-screen flex flex-col lg:flex-row items-center bg-background">
       {/* Left Side - Animated */}
       <div className="hidden lg:flex flex-col w-1/2 relative bg-black overflow-hidden items-center justify-center p-12">
         {/* Animated blobs */}
@@ -131,13 +131,13 @@ const RegisterPage = () => {
         </div>
       </div>
 
-      {/* Right Side - Login Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background px-8">
+      {/* Right Side - Registration Form */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background px-4 sm:px-6 lg:px-8 py-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-md px-2 lg:px-0"
+          className="w-full max-w-sm sm:max-w-md px-2 lg:px-0"
         >
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
@@ -148,10 +148,10 @@ const RegisterPage = () => {
 
           <Card className="border border-border shadow-lg">
             <CardHeader className="space-y-1 pb-4">
-              <CardTitle className="text-2xl font-bold text-center">
+              <CardTitle className="text-2xl sm:text-3xl font-bold text-center">
                 Welcome
               </CardTitle>
-              <CardDescription className="text-center text-base">
+              <CardDescription className="text-center text-sm sm:text-base">
                 Let's create your account
               </CardDescription>
             </CardHeader>
@@ -167,7 +167,7 @@ const RegisterPage = () => {
                     placeholder="abood@gmail.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 text-base"
+                    className="h-11 text-sm sm:text-base"
                     required
                   />
                 </div>
@@ -204,7 +204,7 @@ const RegisterPage = () => {
 
                 <Button
                   type="submit"
-                  className="w-full h-11 text-base bg-purple-600 hover:bg-purple-700"
+                  className="w-full h-11 text-sm sm:text-base bg-purple-600 hover:bg-purple-700"
                   disabled={loading}
                 >
                   {loading ? (
@@ -222,7 +222,7 @@ const RegisterPage = () => {
                   )}
                 </Button>
 
-                <p className="text-base text-center text-muted-foreground">
+                <p className="text-sm sm:text-base text-center text-muted-foreground">
                   have an account?{" "}
                   <Link
                     href="/login"

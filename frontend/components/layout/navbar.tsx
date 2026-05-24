@@ -81,7 +81,7 @@ const Navbar = () => {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (search.trim()) {
-      router.push(`/products?name=${search}`);
+      router.push(`/?name=${search}`);
     }
   };
 
@@ -91,7 +91,7 @@ const Navbar = () => {
         scrolled ? "shadow-lg bg-background/95" : "bg-background/80"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-20 gap-6">
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16 md:h-20 gap-6">
         {/* Left - Logo */}
         <Link href="/" className="flex-shrink-0">
           <motion.h1

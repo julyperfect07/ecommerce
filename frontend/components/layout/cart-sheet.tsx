@@ -31,16 +31,21 @@ const CartSheet = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  // 👇 always fetch when authenticated so badge count is always correct
   const { data, isLoading } = useQuery({
     queryKey: ["cart"],
     queryFn: getCart,
-    enabled: isAuthenticated && open,
+    enabled: isAuthenticated,
   });
 
   const cart = data?.cart;
   const items = cart?.items || [];
   const total = items.reduce((sum: number, item: any) => {
     return sum + item.product.price * item.quantity;
+  }, 0);
+
+  const totalItems = items.reduce((sum: number, item: any) => {
+    return sum + item.quantity;
   }, 0);
 
   const { mutate: update } = useMutation({
@@ -89,10 +94,15 @@ const CartSheet = () => {
           onClick={handleCartClick}
         >
           <ShoppingCart className="w-6 h-6" />
-          {isAuthenticated && items.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 text-white text-xs rounded-full flex items-center justify-center font-bold">
-              {items.length}
-            </span>
+          {/* 👇 badge always shows correct count */}
+          {isAuthenticated && totalItems > 0 && (
+            <motion.span
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute -top-1 -right-1 w-5 h-5 bg-purple-600 text-white text-xs rounded-full flex items-center justify-center font-bold"
+            >
+              {totalItems > 99 ? "99+" : totalItems}
+            </motion.span>
           )}
         </Button>
       </SheetTrigger>
@@ -218,12 +228,12 @@ const CartSheet = () => {
           )}
         </div>
 
-        {/* Footer - Total + Checkout */}
+        {/* Footer */}
         {items.length > 0 && (
           <div className="border-t pt-4 space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between text-muted-foreground">
-                <span>Subtotal</span>
+                <span>Subtotal ({totalItems} items)</span>
                 <span>${total.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
