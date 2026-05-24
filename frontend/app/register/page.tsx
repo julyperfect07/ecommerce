@@ -33,20 +33,40 @@ const RegisterPage = () => {
   }, [isAuthenticated]);
   if (isAuthenticated) return null;
 
+  const validateEmail = (value: string) => /^\S+@\S+\.\S+$/.test(value.trim());
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const isMatch: boolean = password === confirmPassword;
+    if (!validateEmail(email)) {
+      toast.error("Please enter a valid email address");
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      setLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
     try {
-      if (!isMatch) {
-        return toast.error("Passwords do not match");
-      }
-      await register(email, password);
+      await register(email.trim(), password);
       toast.success("Account created successfully! 🎉");
       router.push("/login");
-    } catch (error) {
-      toast.error("Registration failed. Please try again");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Registration failed. Please try again.";
+      toast.error(message);
     } finally {
       setLoading(false);
     }
