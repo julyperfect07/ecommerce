@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { login } from "@/app/services/auth";
 import { getMe } from "@/app/services/auth";
 import { motion } from "framer-motion";
@@ -21,11 +21,17 @@ import useAuthStore from "@/app/store/auth.store";
 
 const LoginPage = () => {
   const router = useRouter();
-  const { setUser } = useAuthStore();
+  const { setUser, isAuthenticated } = useAuthStore();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated]);
+  if (isAuthenticated) return null;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
