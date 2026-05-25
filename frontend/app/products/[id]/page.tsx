@@ -13,13 +13,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import Image from "next/image";
 import useAuthStore from "@/app/store/auth.store";
+import { useQueryClient } from "@tanstack/react-query";
 
 const ProductPage = () => {
   const { id } = useParams();
   const router = useRouter();
   const { isAuthenticated } = useAuthStore();
   const [quantity, setQuantity] = useState(1);
-
+  const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["product", id],
     queryFn: () => getProductById(id as string),
@@ -30,6 +31,7 @@ const ProductPage = () => {
   const { mutate: addToCart, isPending } = useMutation({
     mutationFn: () => addItemToCart({ productId: id as string, quantity }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
       toast.success(`${product?.name} added to cart! 🛒`);
     },
     onError: () => {
@@ -51,7 +53,7 @@ const ProductPage = () => {
       <main className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
         <Skeleton className="h-8 w-24 mb-8" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
-          <Skeleton className="h-96 md:h-[500px] w-full rounded-2xl" />
+          <Skeleton className="h-96 md:h-125 w-full rounded-2xl" />
           <div className="space-y-4">
             <Skeleton className="h-10 w-3/4" />
             <Skeleton className="h-6 w-1/4" />

@@ -50,9 +50,7 @@ const Navbar = () => {
     "Search for watches...",
   ];
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -82,6 +80,7 @@ const Navbar = () => {
     e.preventDefault();
     if (search.trim()) {
       router.push(`/?name=${search}`);
+      setMobileMenuOpen(false);
     }
   };
 
@@ -91,18 +90,18 @@ const Navbar = () => {
         scrolled ? "shadow-lg bg-background/95" : "bg-background/80"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16 md:h-20 gap-6">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16 md:h-20 gap-3 md:gap-6">
         {/* Left - Logo */}
-        <Link href="/" className="flex-shrink-0">
+        <Link href="/" className="shrink-0">
           <motion.h1
             whileHover={{ scale: 1.05 }}
-            className="text-2xl font-bold tracking-tight"
+            className="text-lg md:text-2xl font-bold tracking-tight"
           >
             Shop<span className="text-purple-500">Wave</span>
           </motion.h1>
         </Link>
 
-        {/* Center - Search Bar */}
+        {/* Center - Search Bar (hidden on mobile) */}
         <form
           onSubmit={handleSearch}
           className="flex-1 max-w-2xl hidden md:flex"
@@ -145,18 +144,13 @@ const Navbar = () => {
         </form>
 
         {/* Right - Actions */}
-        <div className="flex items-center gap-2">
-          {/* Mobile search */}
-          <Button variant="ghost" size="icon" className="md:hidden w-10 h-10">
-            <Search className="w-5 h-5" />
-          </Button>
-
+        <div className="flex items-center gap-1 md:gap-2">
           {/* Theme Toggle */}
           {mounted && (
             <Button
               variant="ghost"
               size="icon"
-              className="w-10 h-10"
+              className="w-9 h-9 md:w-10 md:h-10"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               <AnimatePresence mode="wait">
@@ -168,7 +162,7 @@ const Navbar = () => {
                     exit={{ rotate: 90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Sun className="w-5 h-5" />
+                    <Sun className="w-4 h-4 md:w-5 md:h-5" />
                   </motion.div>
                 ) : (
                   <motion.div
@@ -178,7 +172,7 @@ const Navbar = () => {
                     exit={{ rotate: -90, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <Moon className="w-5 h-5" />
+                    <Moon className="w-4 h-4 md:w-5 md:h-5" />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -197,8 +191,8 @@ const Navbar = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Avatar className="w-10 h-10 cursor-pointer ring-2 ring-purple-500/50">
-                      <AvatarFallback className="bg-purple-600 text-white text-base font-bold">
+                    <Avatar className="w-8 h-8 md:w-10 md:h-10 cursor-pointer ring-2 ring-purple-500/50">
+                      <AvatarFallback className="bg-purple-600 text-white text-sm md:text-base font-bold">
                         {user?.email?.[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
@@ -206,10 +200,10 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-3 py-2">
-                    <p className="text-base font-medium truncate">
+                    <p className="text-sm font-medium truncate">
                       {user?.email}
                     </p>
-                    <p className="text-sm text-muted-foreground capitalize">
+                    <p className="text-xs text-muted-foreground capitalize">
                       {user?.role?.toLowerCase()}
                     </p>
                   </div>
@@ -253,13 +247,17 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Link href="/login">
-                <Button variant="ghost" className="text-base h-11 px-5">
+              {/* Hide Login on very small screens */}
+              <Link href="/login" className="hidden sm:block">
+                <Button
+                  variant="ghost"
+                  className="text-sm md:text-base h-9 md:h-11 px-3 md:px-5"
+                >
                   Login
                 </Button>
               </Link>
               <Link href="/register">
-                <Button className="text-base h-11 px-5 bg-purple-600 hover:bg-purple-700">
+                <Button className="text-sm md:text-base h-9 md:h-11 px-3 md:px-5 bg-purple-600 hover:bg-purple-700">
                   Register
                 </Button>
               </Link>
@@ -270,7 +268,7 @@ const Navbar = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden w-10 h-10"
+            className="md:hidden w-9 h-9"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (
@@ -289,9 +287,10 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t bg-background/95 backdrop-blur-md"
+            className="md:hidden border-t bg-background/95 backdrop-blur-md overflow-hidden"
           >
-            <div className="px-6 py-4 space-y-3">
+            <div className="px-4 py-4 space-y-3">
+              {/* Mobile Search */}
               <form onSubmit={handleSearch}>
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -300,32 +299,61 @@ const Navbar = () => {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search products..."
-                    className="w-full h-12 pl-11 pr-4 rounded-xl border bg-muted/50 text-base outline-none"
+                    className="w-full h-12 pl-11 pr-4 rounded-xl border bg-muted/50 text-base outline-none focus:border-purple-500"
                   />
                 </div>
               </form>
-              <Link href="/" className="block py-2 text-base font-medium">
+
+              {/* Mobile Login if not shown in navbar */}
+              {!isAuthenticated && (
+                <Link
+                  href="/login"
+                  className="sm:hidden block py-2 text-base font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Login
+                </Link>
+              )}
+
+              <Link
+                href="/"
+                className="block py-2 text-base font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 Products
               </Link>
+
               {isAuthenticated && (
                 <>
                   <Link
                     href="/orders"
                     className="block py-2 text-base font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
                   >
                     My Orders
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="block py-2 text-base font-medium"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Profile
                   </Link>
                   {user?.role === "ADMIN" && (
                     <Link
                       href="/admin"
                       className="block py-2 text-base font-medium"
+                      onClick={() => setMobileMenuOpen(false)}
                     >
                       Admin Dashboard
                     </Link>
                   )}
                   <button
-                    onClick={handleLogout}
-                    className="block py-2 text-base font-medium text-red-500"
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block py-2 text-base font-medium text-red-500 w-full text-left"
                   >
                     Logout
                   </button>

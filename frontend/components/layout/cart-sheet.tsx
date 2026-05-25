@@ -107,7 +107,7 @@ const CartSheet = () => {
         </Button>
       </SheetTrigger>
 
-      <SheetContent className="w-full sm:max-w-lg flex flex-col">
+      <SheetContent className="w-full sm:max-w-lg flex flex-col p-6">
         <SheetHeader>
           <SheetTitle className="text-2xl font-bold flex items-center gap-2">
             <ShoppingCart className="w-6 h-6 text-purple-500" />
@@ -192,9 +192,13 @@ const CartSheet = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 border rounded-lg p-0.5">
                           <button
-                            onClick={() =>
-                              update({ itemId: item.id, quantity: -1 })
-                            }
+                            onClick={() => {
+                              if (item.quantity === 1) {
+                                remove(item.id);
+                              } else {
+                                update({ itemId: item.id, quantity: -1 });
+                              }
+                            }}
                             className="w-7 h-7 rounded-md hover:bg-muted transition-colors flex items-center justify-center"
                           >
                             <Minus className="w-3 h-3" />
