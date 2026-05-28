@@ -125,7 +125,7 @@ const CartSheet = () => {
             <div className="space-y-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="flex gap-4">
-                  <Skeleton className="w-20 h-20 rounded-xl flex-shrink-0" />
+                  <Skeleton className="w-20 h-20 rounded-xl shrink-0" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-5 w-3/4" />
                     <Skeleton className="h-4 w-1/2" />
@@ -164,7 +164,7 @@ const CartSheet = () => {
                     className="flex gap-4 p-3 rounded-xl border bg-card"
                   >
                     {/* Product Image */}
-                    <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                    <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-muted shrink-0">
                       {item.product.imageUrl ? (
                         <Image
                           src={item.product.imageUrl}

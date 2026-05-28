@@ -101,7 +101,7 @@ const ProductPage = () => {
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative h-80 md:h-[500px] rounded-2xl overflow-hidden bg-muted"
+          className="relative h-80 md:h-125 rounded-2xl overflow-hidden bg-muted"
         >
           {product.imageUrl ? (
             <Image
