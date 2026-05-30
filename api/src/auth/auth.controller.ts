@@ -31,16 +31,19 @@ export class AuthController {
   async login(@Req() req: Request, @Res() res: Response) {
     const user = req.user;
     const { access_token, refresh_token } = await this.authService.login(user);
+    const cookieSameSite =
+      process.env.NODE_ENV === 'production' ? 'none' : 'lax';
+
     res.cookie('access_token', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: cookieSameSite as any,
       maxAge: 15 * 60 * 1000,
     });
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: cookieSameSite as any,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     return res.json({ message: 'Login successful' });
@@ -61,8 +64,16 @@ export class AuthController {
   @UseGuards(JwtGuard)
   async logout(@CurrentUser('id') userId: string, @Res() res: Response) {
     await this.authService.logout(userId);
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    const cookieSameSite =
+      process.env.NODE_ENV === 'production' ? 'none' : 'lax';
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: cookieSameSite as any,
+    };
+
+    res.clearCookie('access_token', cookieOptions);
+    res.clearCookie('refresh_token', cookieOptions);
     return res.json({ message: 'Logout successful' });
   }
 
@@ -74,10 +85,12 @@ export class AuthController {
     const refreshToken = req.cookies['refresh_token'];
     if (!refreshToken) throw new UnauthorizedException('No refresh token');
     const newAccessToken = await this.authService.refreshToken(refreshToken);
+    const cookieSameSite =
+      process.env.NODE_ENV === 'production' ? 'none' : 'lax';
     res.cookie('access_token', newAccessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: cookieSameSite as any,
       maxAge: 15 * 60 * 1000,
     });
     return res.json({ message: 'Token refreshed successfully' });
