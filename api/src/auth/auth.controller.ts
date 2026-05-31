@@ -16,6 +16,7 @@ import { AuthDto } from './dto/auth.dto';
 import { Throttle } from '@nestjs/throttler';
 import { JwtGuard } from './guards/jwt.guard';
 import { CurrentUser } from '../common/decorators/currentuser.decorator';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -100,5 +101,48 @@ export class AuthController {
   @UseGuards(JwtGuard)
   async getMe(@CurrentUser() user) {
     return user;
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  googleAuth() {
+    // this route redirects to Google login automatically
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
+    const user = req.user as any;
+
+    // find or create user in DB
+    const dbUser = await this.authService.findOrCreateGoogleUser(user);
+
+    // generate JWT tokens
+    const { access_token, refresh_token } =
+      await this.authService.login(dbUser);
+
+    const cookieSameSite =
+      process.env.NODE_ENV === 'production' ? 'none' : 'lax';
+
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: cookieSameSite as any,
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: cookieSameSite as any,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    const frontendUrl =
+      process.env.NODE_ENV === 'production'
+        ? 'https://ecommerce-ten-tau-32.vercel.app'
+        : 'http://localhost:3001';
+
+    res.redirect(`${frontendUrl}/auth/callback`);
   }
 }

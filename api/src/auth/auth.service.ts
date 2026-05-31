@@ -23,6 +23,11 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // 👇 check if user registered with Google
+    if (!user.password) {
+      throw new UnauthorizedException('Please sign in with Google');
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -104,5 +109,28 @@ export class AuthService {
       message: 'Registration successful',
       userId: newUser.id,
     };
+  }
+
+  async findOrCreateGoogleUser(googleUser: any) {
+    const { email, name } = googleUser;
+
+    // check if user already exists
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    // if not, create them
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          name,
+          password: '',
+          role: 'USER',
+        },
+      });
+    }
+
+    return user;
   }
 }
