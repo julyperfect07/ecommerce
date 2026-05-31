@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './stratigies/local.strategy';
 import { JwtStrategy } from './stratigies/jwt.strategy';
+import { GoogleStrategy } from './stratigies/google.strategy';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -18,7 +19,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
       signOptions: { expiresIn: '15m' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, GoogleStrategy],
   controllers: [AuthController],
   exports: [JwtModule],
 })
