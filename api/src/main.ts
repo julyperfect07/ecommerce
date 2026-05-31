@@ -9,7 +9,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: true,
+    origin: [
+      'http://localhost:3001',
+      'https://ecommerce-ten-tau-32.vercel.app',
+    ],
     credentials: true,
   });
 

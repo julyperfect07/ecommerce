@@ -5,9 +5,7 @@ import axios, {
 } from "axios";
 
 const api = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_URL ??
-    "https://ecommerce-production-a23b.up.railway.app",
+  baseURL: "https://ecommerce-production-a23b.up.railway.app", // 👈 your Railway URL
   withCredentials: true,
 });
 
