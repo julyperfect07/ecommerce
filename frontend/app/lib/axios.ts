@@ -22,7 +22,6 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      // Don't try to refresh if the refresh endpoint itself failed
       if (originalRequest.url?.includes("/auth/refresh")) {
         return Promise.reject(error);
       }
@@ -31,7 +30,6 @@ api.interceptors.response.use(
         await api.post("/auth/refresh");
         return api(originalRequest);
       } catch {
-        // 👇 only redirect if on a protected route
         if (typeof window !== "undefined") {
           const protectedRoutes = ["/orders", "/profile", "/admin", "/cart"];
           const isProtected = protectedRoutes.some((route) =>
