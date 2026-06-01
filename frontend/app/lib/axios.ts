@@ -4,16 +4,8 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 
-const defaultApiHost = process.env.NEXT_PUBLIC_API_URL
-  ? process.env.NEXT_PUBLIC_API_URL
-  : process.env.NODE_ENV === "production"
-  ? "https://ecommerce-production-a23b.up.railway.app"
-  : "http://localhost:3000";
-
-const clientBase = `${defaultApiHost}/api`;
-
 const api = axios.create({
-  baseURL: clientBase,
+  baseURL: "/api",
   withCredentials: true,
 });
 

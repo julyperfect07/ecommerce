@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://ecommerce-production-a23b.up.railway.app/:path*",
+      },
+    ];
+  },
 };
 
 export default nextConfig;
