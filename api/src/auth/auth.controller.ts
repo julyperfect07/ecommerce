@@ -23,54 +23,54 @@ import { AuthGuard } from '@nestjs/passport';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  @ApiOperation({ summary: 'Login with email and password' })
-  @ApiResponse({ status: 200, description: 'Login successful' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  @Throttle({ default: { ttl: 60000, limit: 5 } })
+  // Helper utility to safely configure cookie properties dynamically based on environment
+  private setAuthCookies(
+    res: Response,
+    accessToken: string,
+    refreshToken: string,
+  ) {
+    const isProd = process.env.NODE_ENV === 'production';
+    const cookieSameSite = isProd ? 'none' : 'lax';
+
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: cookieSameSite as any,
+      maxAge: 15 * 60 * 1000, // 15 mins
+    });
+
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: cookieSameSite as any,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+  }
+
   @Post('login')
   @UseGuards(LocalGuard)
   async login(@Req() req: Request, @Res() res: Response) {
-    const user = req.user;
-    const { access_token, refresh_token } = await this.authService.login(user);
-    const cookieSameSite =
-      process.env.NODE_ENV === 'production' ? 'none' : 'lax';
-
-    res.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: cookieSameSite as any,
-      maxAge: 15 * 60 * 1000,
-    });
-    res.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: cookieSameSite as any,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    const { access_token, refresh_token } = await this.authService.login(
+      req.user,
+    );
+    this.setAuthCookies(res, access_token, refresh_token);
     return res.json({ message: 'Login successful' });
   }
 
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'Registration successful' })
-  @ApiResponse({ status: 409, description: 'Email already in use' })
-  @Throttle({ default: { ttl: 60000, limit: 3 } })
   @Post('register')
   register(@Body() authDto: AuthDto) {
     return this.authService.register(authDto.email, authDto.password);
   }
 
-  @ApiOperation({ summary: 'Logout current user' })
-  @ApiResponse({ status: 200, description: 'Logout successful' })
   @Post('logout')
   @UseGuards(JwtGuard)
   async logout(@CurrentUser('id') userId: string, @Res() res: Response) {
     await this.authService.logout(userId);
-    const cookieSameSite =
-      process.env.NODE_ENV === 'production' ? 'none' : 'lax';
+    const isProd = process.env.NODE_ENV === 'production';
     const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: cookieSameSite as any,
+      secure: isProd,
+      sameSite: (isProd ? 'none' : 'lax') as any,
     };
 
     res.clearCookie('access_token', cookieOptions);
@@ -78,20 +78,17 @@ export class AuthController {
     return res.json({ message: 'Logout successful' });
   }
 
-  @ApiOperation({ summary: 'Refresh access token using refresh token cookie' })
-  @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
-  @ApiResponse({ status: 401, description: 'Invalid refresh token' })
   @Post('refresh')
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshToken = req.cookies['refresh_token'];
     if (!refreshToken) throw new UnauthorizedException('No refresh token');
     const newAccessToken = await this.authService.refreshToken(refreshToken);
-    const cookieSameSite =
-      process.env.NODE_ENV === 'production' ? 'none' : 'lax';
+
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('access_token', newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: cookieSameSite as any,
+      secure: isProd,
+      sameSite: (isProd ? 'none' : 'lax') as any,
       maxAge: 15 * 60 * 1000,
     });
     return res.json({ message: 'Token refreshed successfully' });
@@ -103,46 +100,43 @@ export class AuthController {
     return user;
   }
 
+  // --- GOOGLE OAUTH ROUTES ---
+
   @Get('google')
   @UseGuards(AuthGuard('google'))
   googleAuth() {
-    // this route redirects to Google login automatically
+    // Triggers passport redirect to Google Auth Engine
   }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as any;
+    const googleUser = req.user as any;
+    const dbUser = await this.authService.findOrCreateGoogleUser(googleUser);
 
-    // find or create user in DB
-    const dbUser = await this.authService.findOrCreateGoogleUser(user);
-
-    // generate JWT tokens
-    const { access_token, refresh_token } =
-      await this.authService.login(dbUser);
-
-    const cookieSameSite =
-      process.env.NODE_ENV === 'production' ? 'none' : 'lax';
-
-    res.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: cookieSameSite as any,
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: cookieSameSite as any,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // Generate standard 60-second string token
+    const tempToken = await this.authService.generateTempOAuthToken(dbUser.id);
 
     const frontendUrl =
       process.env.NODE_ENV === 'production'
         ? 'https://ecommerce-ten-tau-32.vercel.app'
         : 'http://localhost:3001';
 
-    res.redirect(`${frontendUrl}/auth/callback`);
+    // Redirect user to Next.js route with string parameters
+    return res.redirect(`${frontendUrl}/auth/callback?token=${tempToken}`);
+  }
+
+  @Post('google/exchange')
+  async exchangeToken(@Body('token') token: string, @Res() res: Response) {
+    const userId = await this.authService.verifyTempOAuthToken(token);
+    const dbUser = await this.authService.findUserById(userId);
+
+    const { access_token, refresh_token } =
+      await this.authService.login(dbUser);
+
+    // Drop clean HTTP-Only production cookies directly onto client context
+    this.setAuthCookies(res, access_token, refresh_token);
+
+    return res.json({ message: 'OAuth exchange successful' });
   }
 }

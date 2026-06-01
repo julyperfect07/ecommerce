@@ -160,7 +160,7 @@ const HomePage = () => {
               <Link href={`/products/${product.id}`}>
                 <div className="group rounded-2xl border bg-card overflow-hidden hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 hover:-translate-y-2">
                   {/* Product Image */}
-                  <div className="relative bg-muted overflow-hidden w-full aspect-[3/2] sm:aspect-[4/3] md:aspect-[16/9]">
+                  <div className="relative bg-muted overflow-hidden w-full aspect-3/2 sm:aspect-4/3 md:aspect-video">
                     {product.imageUrl ? (
                       <Image
                         src={product.imageUrl}
