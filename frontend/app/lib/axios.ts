@@ -4,8 +4,12 @@ import axios, {
   InternalAxiosRequestConfig,
 } from "axios";
 
+const clientBase = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL}/api`
+  : "/api";
+
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: clientBase,
   withCredentials: true,
 });
 
