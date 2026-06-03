@@ -143,7 +143,7 @@ const LoginPage = () => {
             </h1>
           </div>
 
-          <Card className="border border-border shadow-lg">
+          <Card className="border border-border shadow-lg rounded-2xl">
             <CardHeader className="space-y-1 pb-4">
               <CardTitle className="text-2xl font-bold text-center tracking-tight">
                 Welcome back
