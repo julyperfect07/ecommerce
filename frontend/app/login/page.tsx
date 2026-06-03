@@ -129,12 +129,12 @@ const LoginPage = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background px-6 py-10 lg:px-8 lg:py-0">
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background px-4 sm:px-6 py-10 lg:px-8 lg:py-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-sm"
+          className="w-full max-w-sm mx-4 sm:mx-0"
         >
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
