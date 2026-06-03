@@ -27,16 +27,11 @@ const LoginPage = () => {
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, []);
+  // 💡 REMOVED: document.body.style.overflow = "hidden" block to allow normal device behavior
 
   useEffect(() => {
     if (isAuthenticated) router.push("/");
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   if (isAuthenticated) return null;
 
@@ -59,7 +54,8 @@ const LoginPage = () => {
   const isDark = theme === "dark";
 
   return (
-    <div className="h-screen flex items-center lg:items-stretch overflow-hidden">
+    // 💡 Changed 'h-screen' to 'min-h-dvh' and removed 'overflow-hidden'
+    <div className="min-h-dvh flex items-center lg:items-stretch bg-background">
       {/* Left Side */}
       <div
         className={`hidden lg:flex flex-col w-1/2 relative overflow-hidden items-center justify-center p-12 ${
@@ -129,22 +125,23 @@ const LoginPage = () => {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background px-4 sm:px-6 py-10 lg:px-8 lg:py-0">
+      {/* 💡 Changed padding classes on the wrapper to give layout room on mobile platforms */}
+      <div className="flex w-full lg:w-1/2 items-center justify-center bg-background px-4 sm:px-6 py-8 my-auto lg:px-8 lg:py-0">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="w-full max-w-sm mx-4 sm:mx-0"
+          className="w-full max-w-sm mx-auto"
         >
           {/* Mobile logo */}
-          <div className="lg:hidden text-center mb-8">
+          <div className="lg:hidden text-center mb-6">
             <h1 className="text-3xl font-bold tracking-tight">
               Shop<span className="text-purple-500">Wave</span>
             </h1>
           </div>
 
           <Card className="border border-border shadow-lg rounded-2xl">
-            <CardHeader className="space-y-1 pb-4">
+            <CardHeader className="space-y-1 pb-3">
               <CardTitle className="text-2xl font-bold text-center tracking-tight">
                 Welcome back
               </CardTitle>
@@ -153,9 +150,9 @@ const LoginPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-base">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-sm font-medium">
                     Email
                   </Label>
                   <Input
@@ -169,8 +166,8 @@ const LoginPage = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-base">
+                <div className="space-y-1.5">
+                  <Label htmlFor="password" className="text-sm font-medium">
                     Password
                   </Label>
                   <Input
@@ -186,7 +183,7 @@ const LoginPage = () => {
 
                 <Button
                   type="submit"
-                  className="w-full h-11 text-base bg-purple-600 hover:bg-purple-700"
+                  className="w-full h-11 text-base bg-purple-600 hover:bg-purple-700 mt-2"
                   disabled={loading}
                 >
                   {loading ? (
@@ -205,7 +202,7 @@ const LoginPage = () => {
                 </Button>
 
                 {/* Divider */}
-                <div className="relative">
+                <div className="relative my-2">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
                   </div>
@@ -247,7 +244,7 @@ const LoginPage = () => {
                   Continue with Google
                 </Button>
 
-                <p className="text-base text-center text-muted-foreground">
+                <p className="text-sm text-center text-muted-foreground mt-2">
                   Don't have an account?{" "}
                   <Link
                     href="/register"
